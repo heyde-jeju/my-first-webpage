@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>책밭 스탬프 투어 관리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* 운영 화면: 숫자 먼저, 자세한 표는 아래. 출력물은 A4 한 장에 카드 4장 */
+  body { font-size: 16px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .top { background: var(--soil); color: #fbf3e4; padding-top: env(safe-area-inset-top, 0px); }
+  .top .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-block: 12px; }
+  .top h1 { font-size: 22px; display: flex; gap: 8px; align-items: center; }
+  .top h1 svg { width: 26px; height: 26px; color: #b9e08f; }
+  .top .mode { font-size: 14px; padding: 2px 10px; border-radius: 999px; background: rgba(255, 255, 255, .15); }
+  nav.tabs { display: flex; gap: 6px; overflow-x: auto; padding-block: 12px; }
+  nav.tabs button { flex: none; min-height: 46px; padding: 0 16px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); font-family: var(--f-display); font-size: 17px; cursor: pointer; color: var(--muted); }
+  nav.tabs button[aria-selected="true"] { background: var(--tangerine); border-color: var(--tangerine); color: var(--tangerine-ink); }
+  main { display: grid; gap: 16px; padding-block: 4px 40px; }
+  h2 { font-size: 22px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .tile { padding: 14px 16px; border-radius: 16px; background: var(--surface); border: 1.5px solid var(--line); }
+  .tile .k { font-size: 14px; color: var(--muted); }
+  .tile .v { font-family: var(--f-display); font-size: 36px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .tile .s { font-size: 13px; color: var(--muted); }
+  .tile.hi { border-color: var(--tangerine); }
+  .tile.hi .v { color: var(--tangerine); }
+  .tile.ok .v { color: var(--sprout); }
+  .cols { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 820px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+  .bars { display: grid; gap: 8px; }
+  .bar { display: grid; grid-template-columns: minmax(0, 1fr) 44px; gap: 4px 10px; align-items: center; font-size: 15px; }
+  .bar .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar .num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--f-display); font-size: 17px; }
+  .bar .track { grid-column: 1 / -1; height: 10px; border-radius: 6px; background: var(--surface-2); overflow: hidden; }
+  .bar .fill { height: 100%; border-radius: 6px; background: var(--tangerine); }
+  .bar.ilgeu .fill { background: var(--sprout); } .bar.bo .fill { background: var(--soil); }
+  .grp { display: flex; gap: 6px; align-items: center; margin: 14px 0 6px; font-family: var(--f-display); font-size: 18px; }
+  .grp:first-child { margin-top: 0; }
+  .grp svg { width: 22px; height: 22px; }
+  .dist { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; align-items: end; height: 140px; }
+  .dist div { display: grid; align-content: end; justify-items: center; gap: 4px; height: 100%; font-size: 13px; color: var(--muted); }
+  .dist i { display: block; width: 70%; border-radius: 6px 6px 0 0; background: var(--soil-2); min-height: 2px; }
+  .dist .goal i { background: var(--sprout); }
+  .dist b { font-family: var(--f-display); font-weight: 400; font-size: 15px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .log { list-style: none; margin: 0; padding: 0; display: grid; font-size: 14px; max-height: 420px; overflow: auto; }
+  .log li { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+  .log time { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .log .ty { font-family: var(--f-display); }
+  .log .ty.survey { color: var(--tangerine); } .log .ty.redeem { color: var(--sprout); }
+  .updated { font-size: 13px; color: var(--muted); }
+
+  .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .qr-card { display: grid; gap: 8px; justify-items: center; text-align: center; padding: 16px; border-radius: 18px; background: #fffaf1; color: #3b2a1d; border: 1.5px solid #dccbad; break-inside: avoid; }
+  .qr-card .area { display: flex; gap: 6px; align-items: center; font-family: var(--f-display); font-size: 18px; color: #7a5236; }
+  .qr-card .area svg { width: 22px; height: 22px; }
+  .qr-card h3 { font-size: 18px; word-break: keep-all; min-height: 2.5em; display: grid; place-items: center; }
+  .qr-card .qr { width: 180px; height: 180px; background: #fff; padding: 6px; border-radius: 10px; }
+  .qr-card .qr svg { width: 100%; height: 100%; }
+  .qr-card .code { font-family: var(--f-display); font-size: 34px; letter-spacing: .3em; padding-left: .3em; font-variant-numeric: tabular-nums; }
+  .qr-card .place { font-size: 14px; color: #7d6a57; }
+  .qr-card .ops { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .qr-card .ops button { min-height: 38px; padding: 0 10px; border-radius: 10px; border: 1.5px solid #dccbad; background: #f4ecdc; color: #3b2a1d; font-size: 14px; cursor: pointer; }
+  .qr-card.big .qr { width: 260px; height: 260px; }
+  .qr-card.big .code { font-size: 54px; }
+  .confirm-bar { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; align-items: center; font-size: 14px; color: #b33a2a; }
+
+  .warn { padding: 12px 14px; border-radius: 12px; background: var(--tangerine-soft); color: var(--ink); font-size: 15px; }
+  .table-wrap { overflow-x: auto; }
+  table.ed { border-collapse: collapse; width: 100%; min-width: 860px; font-size: 14px; }
+  table.ed th { text-align: left; font-weight: 400; color: var(--muted); padding: 6px; border-bottom: 1.5px solid var(--line); white-space: nowrap; }
+  table.ed td { padding: 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.ed input[type=text], table.ed select { width: 100%; min-height: 38px; padding: 0 8px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--surface); font-size: 14px; }
+  table.ed input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--sprout); }
+  textarea.json { width: 100%; min-height: 360px; font-family: ui-monospace, Consolas, monospace; font-size: 13px; padding: 12px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); }
+  .kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .kv .input { min-height: 46px; font-size: 16px; }
+  .kv label { font-family: var(--f-display); font-size: 16px; }
+  .login { max-width: 420px; margin: 40px auto; display: grid; gap: 14px; }
+  .note { font-size: 14px; color: var(--muted); }
+
+  @media print {
+    body { background: #fff; }
+    .top, nav.tabs, .noprint, .ops, .confirm-bar { display: none !important; }
+    main { padding: 0; }
+    .qr-grid { grid-template-columns: 1fr 1fr; gap: 8mm; }
+    .qr-card { border: 1.5px dashed #999; height: 125mm; align-content: center; }
+    .qr-card .qr { width: 62mm; height: 62mm; }
+    .qr-card.big { height: auto; padding: 20mm 10mm; }
+    .qr-card.big .qr { width: 110mm; height: 110mm; }
+  }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><h1 id="ttl"></h1><span class="mode" id="mode"></span></div></header>
+<div class="wrap">
+  <nav class="tabs noprint" id="tabs" role="tablist" hidden>
+    <button role="tab" data-tab="stats" aria-selected="true">실시간 현황</button>
+    <button role="tab" data-tab="qr">스탬프 QR·코드</button>
+    <button role="tab" data-tab="survey">설문 확인 QR</button>
+    <button role="tab" data-tab="settings">프로그램 설정</button>
+  </nav>
+  <main id="main"></main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="core.js"></script>
+<script src="shared.js"></script>
+<script>
+(function () {
+  var I = UI.icons, esc = UI.esc, main = document.getElementById("main");
+  var tab = "stats", cfg = null, timer = null, pendingConfirm = null;
+  document.getElementById("ttl").innerHTML = I.sprout + "스탬프 투어 관리";
+
+  function area(id) { return cfg.areas.filter(function (a) { return a.id === id; })[0] || { name: id }; }
+
+  function defaultBase() {
+    if (!/^https?:$/.test(location.protocol)) return "";
+    return location.origin + location.pathname.replace(/admin(\.html)?$/, "");
+  }
+  function baseUrl() { return UI.store("jbf26-qr-base") || defaultBase(); }
+  function qrUrl(token) { var b = baseUrl(); return (b || "") + (b.indexOf("?") >= 0 ? "&" : "?") + "t=" + token; }
+  function qrSvg(text) {
+    if (!window.qrcode) return '<p class="note">QR 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.</p>';
+    var q = qrcode(0, "M"); q.addData(text); q.make();
+    return q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+  }
+
+  async function start() {
+    await Api.init();
+    document.getElementById("mode").textContent = Api.mode === "server" ? "서버 저장" : "데모 모드 · 이 기기에만 저장";
+    renderLogin();
+  }
+
+  function renderLogin() {
+    main.innerHTML = '<form class="card login" id="lf"><h2>관리자 로그인</h2>' +
+      '<div class="field"><label for="pw">관리자 비밀번호</label><input class="input" id="pw" type="password" autocomplete="current-password"></div>' +
+      '<p class="msg" id="lm" role="alert"></p><button class="btn block" type="submit">들어가기</button>' +
+      (Api.mode === "demo" ? '<p class="note">데모 모드 기본 비밀번호는 config/programs.js의 adminPassword 값이에요.</p>' : "") + "</form>";
+    document.getElementById("lf").onsubmit = async function (e) {
+      e.preventDefault();
+      var r = await Api.admin.login(document.getElementById("pw").value);
+      if (!r.ok) { document.getElementById("lm").textContent = r.message || "들어갈 수 없어요."; return; }
+      var c = await Api.admin.config(); cfg = c.config;
+      document.getElementById("tabs").hidden = false;
+      show("stats");
+    };
+  }
+
+  document.getElementById("tabs").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-tab]"); if (b) show(b.dataset.tab);
+  });
+  function show(t) {
+    tab = t; pendingConfirm = null;
+    document.querySelectorAll("#tabs button").forEach(function (b) { b.setAttribute("aria-selected", b.dataset.tab === t); });
+    clearInterval(timer);
+    if (t === "stats") { renderStats(); timer = setInterval(renderStats, 5000); }
+    if (t === "qr") renderQr();
+    if (t === "survey") renderSurvey();
+    if (t === "settings") renderSettings();
+  }
+
+  /* ---------- 실시간 현황 ---------- */
+  async function renderStats() {
+    var r = await Api.admin.stats();
+    if (!r.ok) { main.innerHTML = '<p class="msg">' + esc(r.message) + "</p>"; return; }
+    if (tab !== "stats") return;
+    var s = r.stats, req = cfg.rules.requiredStamps;
+    var maxP = Math.max.apply(null, [1].concat(Object.keys(s.byProgram).map(function (k) { return s.byProgram[k]; })));
+    var maxD = Math.max.apply(null, [1].concat(s.distribution));
+    var groups = cfg.areas.filter(function (a) { return a.stamp; }).map(function (a) {
+      var items = cfg.programs.filter(function (p) { return p.stamp && p.area === a.id; })
+        .sort(function (x, y) { return (s.byProgram[y.id] || 0) - (s.byProgram[x.id] || 0); });
+      return '<div class="grp">' + I[a.id] + esc(a.name) + ' <span class="note">' + (s.byArea[a.id] || 0) + "개</span></div>" +
+        items.map(function (p) {
+          var v = s.byProgram[p.id] || 0;
+          return '<div class="bar ' + a.id + '"><span class="name" title="' + esc(p.name) + '">' + esc(p.name) + '</span><span class="num">' + v + '</span><div class="track"><div class="fill" style="width:' + (v / maxP * 100) + '%"></div></div></div>';
+        }).join("");
+    }).join("");
+    var typeName = { join: "등록", stamp: "스탬프", survey: "설문 확인", redeem: "선물 교환" };
+    main.innerHTML =
+      '<div class="row" style="justify-content:space-between"><h2>실시간 현황</h2><span class="updated">5초마다 새로 고침 · ' + UI.fmtTime(Date.now()).split(" ")[1] + "</span></div>" +
+      '<section class="tiles">' +
+        '<div class="tile"><div class="k">참여자</div><div class="v">' + s.participants + '</div><div class="s">등록한 사람</div></div>' +
+        '<div class="tile"><div class="k">찍힌 스탬프</div><div class="v">' + s.stamps + '</div><div class="s">1인 평균 ' + (s.participants ? (s.stamps / s.participants).toFixed(1) : 0) + "개</div></div>" +
+        '<div class="tile"><div class="k">스탬프 ' + req + '개 이상</div><div class="v">' + s.qualified + '</div><div class="s">설문 참여 가능</div></div>' +
+        '<div class="tile hi"><div class="k">설문 확인</div><div class="v">' + s.survey + '</div><div class="s">교환권 발급</div></div>' +
+        '<div class="tile ok"><div class="k">선물 교환</div><div class="v">' + s.redeemed + '</div><div class="s">남은 교환권 ' + (s.survey - s.redeemed) + "장</div></div>" +
+      "</section>" +
+      '<div class="cols"><section class="card"><h2 style="margin-bottom:10px">프로그램별 스탬프</h2>' + groups + "</section>" +
+      '<div style="display:grid;gap:16px"><section class="card"><h2 style="margin-bottom:10px">모은 스탬프 수</h2><div class="dist">' +
+        s.distribution.map(function (v, i) { return '<div class="' + (i >= req ? "goal" : "") + '"><b>' + v + '</b><i style="height:' + (v / maxD * 100) + '%"></i>' + i + "개</div>"; }).join("") +
+      '</div><p class="note" style="margin-top:8px">초록 막대: 선물 조건(' + req + "개 이상)을 채운 사람</p></section>" +
+      '<section class="card"><h2 style="margin-bottom:6px">최근 기록</h2><ul class="log">' +
+        (s.log.length ? s.log.map(function (l) {
+          return "<li><time>" + UI.fmtTime(l.at) + '</time><span><span class="ty ' + l.type + '">' + typeName[l.type] + "</span> · " + esc(l.nickname) + (l.program ? " · " + esc(l.program) : "") + (l.method === "qr" ? " (QR)" : l.method === "code" ? " (코드)" : "") + "</span></li>";
+        }).join("") : '<li><span></span><span class="note">아직 기록이 없어요.</span></li>') +
+      '</ul></section><p class="note">만족도 조사 응답 내용은 구글 설문지 관리 화면의 \'응답\' 탭에서 확인해 주세요.</p></div></div>';
+  }
+
+  /* ---------- 공통: 코드 바꾸기 (화면 안에서 한 번 더 확인) ---------- */
+  function askConfirm(key, label, action) {
+    if (pendingConfirm === key) { pendingConfirm = null; action(); return; }
+    pendingConfirm = key;
+    var el = document.querySelector('[data-confirm="' + key + '"]');
+    if (el) el.innerHTML = '<span>' + esc(label) + ' 기존 QR·코드는 쓸 수 없게 돼요.</span>';
+  }
+
+  function baseBlock() {
+    var b = baseUrl();
+    return '<section class="card noprint" style="display:grid;gap:10px">' +
+      '<div class="field"><label for="base">참여자 앱 주소 (QR에 들어가요)</label><input class="input" id="base" value="' + esc(b) + '" placeholder="https://stamp.example.kr/"></div>' +
+      (!b || /localhost|127\.0\.0\.1/.test(b) ? '<p class="warn">QR을 출력하기 전에 실제로 참여자가 접속할 주소(https)를 넣어 주세요. 지금 주소로 만든 QR은 다른 휴대폰에서 열리지 않아요.</p>' : "") +
+      '<p class="note">휴대폰 기본 카메라로 QR을 찍으면 앱이 열리면서 바로 스탬프가 찍혀요. 앱 안의 \'QR 찍기\'로도 찍을 수 있어요.</p></section>';
+  }
+  function bindBase(rerender) {
+    var el = document.getElementById("base");
+    el.onchange = function () { UI.store("jbf26-qr-base", el.value.trim() || null); rerender(); };
+  }
+
+  /* ---------- 스탬프 QR·코드 ---------- */
+  function renderQr() {
+    var progs = cfg.programs.filter(function (p) { return p.stamp; });
+    main.innerHTML =
+      '<div class="row noprint" style="justify-content:space-between"><h2>스탬프 QR·인증코드 (' + progs.length + '곳)</h2><button class="btn small" id="print">출력하기</button></div>' +
+      baseBlock() +
+      '<section class="qr-grid">' + progs.map(function (p) {
+        var a = area(p.area);
+        return '<div class="qr-card"><div class="area">' + I[p.area] + esc(a.name) + " 스탬프</div><h3>" + esc(p.name) + "</h3>" +
+          '<div class="qr">' + qrSvg(qrUrl(p.token)) + '</div><div class="label">QR이 어려우면 인증코드</div><div class="code">' + esc(p.code) + "</div>" +
+          '<div class="place">' + esc(p.place) + " · " + esc(p.day) + " " + esc(p.time) + "</div>" +
+          '<div class="ops"><button data-act="code" data-id="' + p.id + '">코드 바꾸기</button><button data-act="token" data-id="' + p.id + '">QR 바꾸기</button></div>' +
+          '<div class="confirm-bar" data-confirm="' + p.id + '"></div></div>';
+      }).join("") + "</section>";
+    bindBase(renderQr);
+    document.getElementById("print").onclick = function () { window.print(); };
+    main.querySelectorAll("[data-act]").forEach(function (b) {
+      b.onclick = function () {
+        var id = b.dataset.id, part = b.dataset.act;
+        askConfirm(id + part, "한 번 더 누르면 바뀌어요.", async function () {
+          var r = await Api.admin.regen(id, part);
+          if (r.config) cfg = r.config;
+          renderQr();
+        });
+        if (pendingConfirm) { b.textContent = "정말 바꾸기"; b.style.borderColor = "#b33a2a"; }
+      };
+    });
+  }
+
+  /* ---------- 설문 확인 QR ---------- */
+  function renderSurvey() {
+    var sv = cfg.survey;
+    main.innerHTML =
+      '<div class="row noprint" style="justify-content:space-between"><h2>1층 로비 · 설문 확인</h2><button class="btn small" id="print">출력하기</button></div>' +
+      baseBlock() +
+      '<section class="qr-grid" style="grid-template-columns:minmax(0,1fr)"><div class="qr-card big"><div class="area">' + I.survey + "만족도 조사 확인 (담당자용)</div>" +
+        "<h3>설문 제출 화면을 확인한 뒤 이 QR을 찍게 해 주세요</h3>" +
+        '<div class="qr">' + qrSvg(qrUrl(sv.token)) + '</div><div class="label">또는 확인코드</div><div class="code">' + esc(sv.code) + "</div>" +
+        '<div class="place">' + esc(sv.place) + "</div>" +
+        '<div class="ops"><button data-act="code">확인코드 바꾸기</button><button data-act="token">확인 QR 바꾸기</button></div><div class="confirm-bar" data-confirm="survey"></div></div></section>' +
+      '<section class="card noprint" style="display:grid;gap:12px"><h2>직접 정하기</h2><div class="kv">' +
+        '<div class="field"><label for="svc">설문 확인코드 (4자리)</label><div class="row"><input class="input" id="svc" inputmode="numeric" maxlength="4" value="' + esc(sv.code) + '" style="flex:1"><button class="btn small" id="svcSave">저장</button></div></div>' +
+        '<div class="field"><label for="pinv">선물 교환 담당자 PIN (4자리)</label><div class="row"><input class="input" id="pinv" inputmode="numeric" maxlength="4" value="' + esc(cfg.staffPin) + '" style="flex:1"><button class="btn small" id="pinSave">저장</button></div></div>' +
+      '</div><p class="msg" id="svm" role="status"></p><p class="note">확인코드가 밖으로 퍼진 것 같으면 바로 바꿔 주세요. 이미 확인받은 참여자의 교환권은 그대로 유지돼요. 담당자 PIN은 참여자 화면의 \'교환 완료\' 버튼에 써요.</p></section>';
+    bindBase(renderSurvey);
+    document.getElementById("print").onclick = function () { window.print(); };
+    main.querySelectorAll("[data-act]").forEach(function (b) {
+      b.onclick = function () {
+        askConfirm("survey" + b.dataset.act, "한 번 더 누르면 바뀌어요.", async function () {
+          var r = await Api.admin.regen("survey", b.dataset.act); if (r.config) cfg = r.config; renderSurvey();
+        });
+        if (pendingConfirm) { b.textContent = "정말 바꾸기"; b.style.borderColor = "#b33a2a"; }
+      };
+    });
+    async function save(target, val) {
+      var r = await Api.admin.setCode(target, val);
+      var m = document.getElementById("svm");
+      if (r.config) cfg = r.config;
+      if (!r.ok) { m.className = "msg"; m.textContent = r.message; return; }
+      renderSurvey(); var m2 = document.getElementById("svm"); m2.className = "msg good"; m2.textContent = "저장했어요.";
+    }
+    document.getElementById("svcSave").onclick = function () { save("survey", document.getElementById("svc").value); };
+    document.getElementById("pinSave").onclick = function () { save("staffPin", document.getElementById("pinv").value); };
+  }
+
+  /* ---------- 프로그램 설정 ---------- */
+  function renderSettings() {
+    var areaOpts = function (sel) { return cfg.areas.map(function (a) { return '<option value="' + a.id + '"' + (a.id === sel ? " selected" : "") + ">" + esc(a.name) + "</option>"; }).join(""); };
+    var cell = function (i, k, v) { return '<td><input type="text" data-i="' + i + '" data-k="' + k + '" value="' + esc(v || "") + '"></td>'; };
+    main.innerHTML =
+      '<div class="row" style="justify-content:space-between"><h2>프로그램 설정</h2><div class="row"><button class="btn small ghost" id="reload">파일에서 다시 읽기</button><button class="btn small" id="saveTbl">저장</button></div></div>' +
+      '<p class="note">이 표는 <b>config/programs.js</b> 파일과 같아요. 여기서 저장하면 서버가 파일을 고쳐 써요. 인증코드·QR은 \'스탬프 QR·코드\' 탭에서 바꿔 주세요. 스탬프 대상에서 빼면 참여자 화면에서 \'함께 즐길 거리\'처럼 안내만 돼요.</p>' +
+      '<p class="msg" id="setMsg" role="status" style="white-space:pre-line"></p>' +
+      '<section class="card"><div class="kv">' +
+        '<div class="field"><label for="g_name">선물 이름</label><input class="input" id="g_name" value="' + esc(cfg.gift.name) + '"></div>' +
+        '<div class="field"><label for="g_place">선물 받는 곳</label><input class="input" id="g_place" value="' + esc(cfg.gift.place) + '"></div>' +
+        '<div class="field"><label for="s_url">만족도 조사 링크</label><input class="input" id="s_url" value="' + esc(cfg.survey.url) + '"></div>' +
+        '<div class="field"><label for="r_req">선물 조건 (스탬프 개수)</label><input class="input" id="r_req" inputmode="numeric" value="' + cfg.rules.requiredStamps + '"></div>' +
+        '<div class="field"><label for="r_max">스탬프판 칸 수</label><input class="input" id="r_max" inputmode="numeric" value="' + cfg.rules.maxStamps + '"></div>' +
+      "</div></section>" +
+      '<section class="card table-wrap"><table class="ed"><thead><tr><th>스탬프</th><th>영역</th><th style="width:30%">프로그램 이름</th><th>날짜</th><th>시간</th><th>장소</th><th>우천 시 장소</th></tr></thead><tbody>' +
+        cfg.programs.map(function (p, i) {
+          return '<tr><td><input type="checkbox" data-i="' + i + '" data-k="stamp"' + (p.stamp ? " checked" : "") + ' aria-label="스탬프 대상"></td>' +
+            '<td><select data-i="' + i + '" data-k="area">' + areaOpts(p.area) + "</select></td>" +
+            cell(i, "name", p.name) + cell(i, "day", p.day) + cell(i, "time", p.time) + cell(i, "place", p.place) + cell(i, "rainPlace", p.rainPlace) + "</tr>";
+        }).join("") +
+      "</tbody></table></section>" +
+      '<details class="card"><summary style="cursor:pointer;font-family:var(--f-display);font-size:18px">전체 설정 직접 고치기 (JSON)</summary>' +
+        '<p class="note" style="margin:10px 0">프로그램 추가·삭제, 날짜 형식 등은 여기서 고쳐요. 날짜는 10.24 / 10.25 / 양일, 시간은 14:00~16:00 또는 상설처럼 적어 주세요.</p>' +
+        '<textarea class="json" id="json" spellcheck="false"></textarea><div class="row" style="margin-top:10px"><button class="btn small" id="saveJson">JSON 저장</button></div></details>' +
+      (Api.mode === "demo" ? '<section class="card noprint"><h2>데모 기록 지우기</h2><p class="note" style="margin:6px 0 10px">이 기기에 쌓인 데모 참여자 기록을 모두 지워요.</p><button class="btn small ghost" id="resetDemo">데모 기록 지우기</button><span class="confirm-bar" data-confirm="reset"></span></section>' : "");
+    document.getElementById("json").value = JSON.stringify(cfg, null, 2);
+    var msg = document.getElementById("setMsg");
+    async function persist(next) {
+      var r = await Api.admin.saveConfig(next);
+      if (!r.ok) { msg.className = "msg"; msg.textContent = r.message; return; }
+      cfg = r.config; renderSettings();
+      var m = document.getElementById("setMsg"); m.className = "msg good"; m.textContent = "저장했어요. 참여자 화면은 새로고침하면 바뀌어요.";
+    }
+    document.getElementById("saveTbl").onclick = function () {
+      var next = JSON.parse(JSON.stringify(cfg));
+      main.querySelectorAll("table.ed [data-k]").forEach(function (el) {
+        var p = next.programs[+el.dataset.i], k = el.dataset.k;
+        p[k] = el.type === "checkbox" ? el.checked : el.value.trim();
+      });
+      // 스탬프 대상으로 새로 켠 프로그램에는 코드와 QR 값을 만들어 줘요
+      next.programs.forEach(function (p) {
+        if (!p.stamp) return;
+        if (!p.token) p.token = StampCore.randomString(10);
+        if (!/^\d{4}$/.test(p.code || "")) { var tmp = { config: next }; p.code = "0000"; StampCore.regen(tmp, p.id, "code"); }
+      });
+      next.gift.name = document.getElementById("g_name").value.trim();
+      next.gift.place = document.getElementById("g_place").value.trim();
+      next.survey.url = document.getElementById("s_url").value.trim();
+      next.rules.requiredStamps = parseInt(document.getElementById("r_req").value, 10);
+      next.rules.maxStamps = parseInt(document.getElementById("r_max").value, 10);
+      persist(next);
+    };
+    document.getElementById("saveJson").onclick = function () {
+      try { persist(JSON.parse(document.getElementById("json").value)); }
+      catch (e) { msg.className = "msg"; msg.textContent = "JSON 형식이 맞지 않아요: " + e.message; }
+    };
+    document.getElementById("reload").onclick = async function () {
+      var r = await Api.admin.reload();
+      if (r.config) cfg = r.config;
+      renderSettings();
+      var m = document.getElementById("setMsg");
+      m.className = r.warnings && r.warnings.length ? "msg" : "msg good";
+      m.textContent = r.warnings && r.warnings.length ? "다시 읽었어요. 확인할 점:\n" + r.warnings.join("\n") : "파일에서 다시 읽었어요.";
+    };
+    var rd = document.getElementById("resetDemo");
+    if (rd) rd.onclick = function () {
+      askConfirm("reset", "한 번 더 누르면 지워져요.", function () { Api.admin.resetDemo(); show("stats"); });
+    };
+  }
+
+  start();
+})();
+</script>
+</body>
+</html>

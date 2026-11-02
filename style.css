@@ -1,0 +1,88 @@
+/* 가을 책밭: 흙빛 갈색 · 억새 베이지 · 귤빛 주황 · 새싹 초록 */
+:root {
+  --bg: #f4ecdc;          /* 억새 베이지 */
+  --surface: #fffaf1;
+  --surface-2: #ece0c8;
+  --ink: #3b2a1d;         /* 흙빛 진갈색 */
+  --muted: #7d6a57;
+  --line: #dccbad;
+  --soil: #7a5236;
+  --soil-2: #a87a52;
+  --tangerine: #e2701a;   /* 귤빛 */
+  --tangerine-ink: #ffffff;
+  --tangerine-soft: #fbe2cb;
+  --sprout: #4f8f2f;      /* 새싹 */
+  --sprout-soft: #dcebc9;
+  --seed: #b5ab9d;        /* 미획득 회색 씨앗 */
+  --danger: #b33a2a;
+  --shadow: 0 2px 0 rgba(74, 50, 33, .12);
+  --f-display: "Jua", "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --f-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --r: 18px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1d1712; --surface: #29211a; --surface-2: #362b21; --ink: #f3e8d6; --muted: #bba68e; --line: #45382b;
+    --soil: #c89c72; --soil-2: #9b7552; --tangerine: #f08f3a; --tangerine-ink: #2a1609; --tangerine-soft: #4a2e16;
+    --sprout: #8cc45f; --sprout-soft: #2b3a1e; --seed: #62574b; --danger: #f08a7a; --shadow: 0 2px 0 rgba(0, 0, 0, .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1d1712; --surface: #29211a; --surface-2: #362b21; --ink: #f3e8d6; --muted: #bba68e; --line: #45382b;
+  --soil: #c89c72; --soil-2: #9b7552; --tangerine: #f08f3a; --tangerine-ink: #2a1609; --tangerine-soft: #4a2e16;
+  --sprout: #8cc45f; --sprout-soft: #2b3a1e; --seed: #62574b; --danger: #f08a7a; --shadow: 0 2px 0 rgba(0, 0, 0, .35);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: 18px; line-height: 1.55;
+}
+h1, h2, h3 { font-family: var(--f-display); font-weight: 400; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--tangerine); }
+svg { display: block; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--tangerine); outline-offset: 2px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 60px; padding: 0 22px; border-radius: 16px; border: 2px solid transparent;
+  font-family: var(--f-display); font-size: 21px; cursor: pointer; text-decoration: none;
+  background: var(--tangerine); color: var(--tangerine-ink); box-shadow: var(--shadow);
+  transition: transform .08s ease;
+}
+.btn:active { transform: translateY(1px); }
+.btn svg { width: 26px; height: 26px; flex: none; }
+.btn.block { width: 100%; }
+.btn.sprout { background: var(--sprout); color: var(--surface); }
+.btn.ghost { background: var(--surface); color: var(--ink); border-color: var(--line); }
+.btn.small { min-height: 46px; font-size: 17px; padding: 0 16px; border-radius: 12px; }
+.btn[disabled], .btn.disabled { background: var(--surface-2); color: var(--muted); border-color: var(--line); box-shadow: none; cursor: not-allowed; }
+
+.card { background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--r); padding: 20px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px;
+  font-family: var(--f-display); font-size: 15px; background: var(--surface-2); color: var(--soil); white-space: nowrap;
+}
+.chip svg { width: 16px; height: 16px; }
+.chip.manna { background: var(--tangerine-soft); color: var(--tangerine); }
+.chip.ilgeu { background: var(--sprout-soft); color: var(--sprout); }
+.chip.bo { background: var(--surface-2); color: var(--soil); }
+.label { font-size: 15px; letter-spacing: .04em; color: var(--muted); }
+
+.field { display: grid; gap: 6px; }
+.field label { font-family: var(--f-display); font-size: 19px; }
+.input {
+  width: 100%; min-height: 60px; padding: 0 16px; border-radius: 14px; border: 2px solid var(--line);
+  background: var(--surface); font-size: 22px;
+}
+.input:focus { border-color: var(--tangerine); outline: none; }
+.input.code { font-family: var(--f-display); font-size: 34px; letter-spacing: .5em; text-align: center; padding-left: .5em; font-variant-numeric: tabular-nums; }
+.msg { min-height: 1.5em; font-size: 17px; color: var(--danger); }
+.msg.good { color: var(--sprout); }
+
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

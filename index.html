@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>책밭 스탬프 투어</title>
+<meta name="description" content="2026 제주독서대전 온라인 스탬프 투어">
+<meta name="theme-color" content="#f4ecdc">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* 한 손 레이아웃: 위에서 읽고, 아래 탭바와 큰 버튼은 엄지로 */
+  body { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+  .wrap { max-width: 520px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .top { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1.5px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 56px; }
+  .brand { display: flex; align-items: center; gap: 8px; font-family: var(--f-display); font-size: 18px; color: var(--soil); }
+  .brand svg { width: 26px; height: 26px; color: var(--sprout); }
+  .demo-badge { font-size: 13px; padding: 2px 8px; border-radius: 999px; background: var(--tangerine-soft); color: var(--tangerine); font-family: var(--f-display); }
+  main.wrap { display: grid; gap: 18px; padding-block: 18px 24px; }
+
+  /* 탭바 */
+  .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 1.5px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .tabbar .wrap { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .tabbar a { display: grid; justify-items: center; gap: 2px; padding: 10px 0 12px; text-decoration: none; color: var(--muted); font-family: var(--f-display); font-size: 16px; }
+  .tabbar a svg { width: 28px; height: 28px; }
+  .tabbar a[aria-current="page"] { color: var(--tangerine); }
+
+  /* 홈 */
+  .hero { display: grid; gap: 12px; padding: 22px 20px 20px; border-radius: 24px; background: var(--soil); color: #fbf3e4; position: relative; overflow: hidden; }
+  .hero .edition { font-family: var(--f-display); font-size: 17px; color: #ffd0a1; }
+  .hero h1 { font-size: 38px; }
+  .hero h1 small { display: block; font-size: 22px; color: #f5e3c8; }
+  .hero .slogan { font-size: 19px; line-height: 1.5; }
+  .hero .meta { display: grid; gap: 2px; font-size: 16px; color: #f0dcc0; }
+  .hero-field { position: absolute; right: -6px; bottom: -4px; width: 150px; opacity: .9; pointer-events: none; }
+  .hero > *:not(.hero-field) { position: relative; }
+  .steps { display: grid; gap: 10px; counter-reset: s; list-style: none; padding: 0; margin: 0; }
+  .steps li { display: grid; grid-template-columns: 48px 1fr; gap: 12px; align-items: center; }
+  .steps .num { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--tangerine-soft); color: var(--tangerine); font-family: var(--f-display); font-size: 24px; }
+  .steps b { font-family: var(--f-display); font-weight: 400; font-size: 20px; display: block; }
+  .steps span { color: var(--muted); font-size: 16px; }
+  .area-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .area-tile { display: grid; justify-items: center; gap: 4px; padding: 14px 6px; border-radius: 16px; background: var(--surface-2); text-align: center; }
+  .area-tile svg { width: 34px; height: 34px; }
+  .area-tile b { font-family: var(--f-display); font-weight: 400; font-size: 20px; }
+  .area-tile span { font-size: 14px; color: var(--muted); }
+  .area-tile.manna svg { color: var(--tangerine); } .area-tile.ilgeu svg { color: var(--sprout); } .area-tile.bo svg { color: var(--soil); }
+  .gift-line { display: grid; grid-template-columns: 52px 1fr; gap: 12px; align-items: center; }
+  .gift-line svg { width: 52px; height: 52px; color: var(--tangerine); }
+  .sec-title { font-size: 24px; margin-bottom: 12px; }
+  .note { font-size: 16px; color: var(--muted); }
+
+  /* 등록 */
+  .consent { display: grid; grid-template-columns: 32px 1fr; gap: 10px; align-items: start; padding: 14px; border-radius: 14px; background: var(--surface-2); font-size: 16px; }
+  .consent input { width: 28px; height: 28px; margin: 2px 0 0; accent-color: var(--tangerine); }
+  .consent dl { margin: 6px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; color: var(--muted); font-size: 15px; }
+  .consent dt { color: var(--ink); }
+  .consent dd { margin: 0; }
+  form.stack { display: grid; gap: 16px; }
+
+  /* 책밭 진행 */
+  .field-card { display: grid; gap: 10px; padding: 16px 16px 14px; }
+  .field-svg { width: 100%; height: auto; }
+  .progress-line { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .progress-line .count { font-family: var(--f-display); font-size: 26px; }
+  .progress-line .count em { font-style: normal; color: var(--tangerine); font-size: 34px; }
+  .progress-line .hint { font-size: 16px; color: var(--muted); }
+
+  /* 스탬프판 */
+  .board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .slot { position: relative; display: grid; justify-items: center; align-content: start; gap: 4px; padding: 12px 6px 10px; border-radius: 16px; border: 2px dashed var(--line); background: var(--surface); min-height: 150px; text-align: center; overflow: hidden; }
+  .slot .no { position: absolute; top: 6px; left: 9px; font-family: var(--f-display); font-size: 15px; color: var(--muted); }
+  .slot .seed { width: 54px; height: 54px; margin-top: 18px; color: var(--seed); }
+  .slot .empty-txt { font-size: 14px; color: var(--muted); }
+  .slot.filled { border-style: solid; border-color: transparent; background: var(--surface-2); }
+  .stampmark { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; align-content: center; gap: 0; border: 3px solid currentColor; color: var(--tangerine); transform: rotate(-8deg); background: var(--surface); }
+  .stampmark svg { width: 30px; height: 30px; }
+  .stampmark b { font-family: var(--f-display); font-weight: 400; font-size: 15px; line-height: 1.1; }
+  .slot.ilgeu .stampmark { color: var(--sprout); }
+  .slot.bo .stampmark { color: var(--soil); }
+  .slot .pname { font-size: 13px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: keep-all; }
+  .slot .ptime { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .slot.survey { border-color: var(--tangerine); border-style: solid; background: var(--tangerine-soft); }
+  .slot.survey .must { font-family: var(--f-display); font-size: 15px; color: var(--tangerine); margin-top: 4px; }
+  .slot.survey .seed { margin-top: 2px; color: var(--tangerine); opacity: .55; }
+  .slot.survey.filled { background: var(--sprout-soft); border-color: var(--sprout); }
+  .slot.survey.filled .stampmark { color: var(--sprout); }
+  .slot.just .stampmark { animation: thump .5s cubic-bezier(.2, 1.6, .4, 1) both; }
+  @keyframes thump { 0% { transform: scale(2.2) rotate(-25deg); opacity: 0; } 100% { transform: scale(1) rotate(-8deg); opacity: 1; } }
+  .full-banner { display: flex; gap: 10px; align-items: center; padding: 12px 14px; border-radius: 14px; background: var(--sprout-soft); color: var(--sprout); font-family: var(--f-display); font-size: 19px; }
+  .full-banner svg { width: 28px; height: 28px; flex: none; }
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .actions .btn { padding: 0 10px; font-size: 20px; white-space: nowrap; gap: 6px; }
+
+  .survey-card { display: grid; gap: 14px; }
+  .survey-card h2 { display: flex; gap: 8px; align-items: center; font-size: 23px; }
+  .survey-card h2 svg { width: 28px; height: 28px; color: var(--tangerine); }
+  .callout { padding: 12px 14px; border-radius: 12px; background: var(--surface-2); font-size: 17px; }
+  .confirm-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+  .confirm-row .input.code { font-size: 28px; letter-spacing: .35em; }
+  .or { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 15px; }
+  .or::before, .or::after { content: ""; flex: 1; height: 1.5px; background: var(--line); }
+
+  /* 교환권 */
+  .ticket { position: relative; display: grid; gap: 16px; padding: 24px 20px; border-radius: 24px; background: var(--surface); border: 2px solid var(--tangerine); overflow: hidden; }
+  .ticket .head { display: grid; justify-items: center; gap: 6px; text-align: center; padding-bottom: 16px; border-bottom: 2px dashed var(--line); }
+  .ticket .head svg { width: 56px; height: 56px; color: var(--tangerine); }
+  .ticket .head p { font-family: var(--f-display); font-size: 20px; color: var(--tangerine); }
+  .ticket .head h1 { font-size: 28px; }
+  .ticket dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; font-size: 18px; }
+  .ticket dt { color: var(--muted); font-size: 16px; padding-top: 2px; }
+  .ticket dd { margin: 0; font-family: var(--f-display); font-size: 20px; }
+  .ticket .status { display: flex; justify-content: center; }
+  .pill { padding: 6px 16px; border-radius: 999px; font-family: var(--f-display); font-size: 18px; background: var(--sprout-soft); color: var(--sprout); }
+  .used-mark { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-14deg); padding: 8px 18px; border: 4px solid var(--danger); color: var(--danger); border-radius: 12px; font-family: var(--f-display); font-size: 34px; background: color-mix(in srgb, var(--surface) 70%, transparent); white-space: nowrap; text-align: center; line-height: 1.1; }
+  .used-mark small { display: block; font-size: 15px; }
+
+  /* 행사 정보 */
+  .hours { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .hours div { padding: 12px; border-radius: 14px; background: var(--surface-2); text-align: center; }
+  .hours b { display: block; font-family: var(--f-display); font-weight: 400; font-size: 19px; }
+  .hours span { font-size: 16px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 5px; border-radius: 16px; background: var(--surface-2); }
+  .seg button { min-height: 50px; border: 0; border-radius: 12px; background: transparent; font-family: var(--f-display); font-size: 16px; color: var(--muted); cursor: pointer; line-height: 1.15; }
+  .seg button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+  .tt { list-style: none; margin: 0; padding: 0; display: grid; }
+  .tt li { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; padding: 14px 0; border-bottom: 1.5px solid var(--line); }
+  .tt li:last-child { border-bottom: 0; }
+  .tt .t { font-family: var(--f-display); font-size: 19px; color: var(--soil); font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .tt .n { font-size: 18px; line-height: 1.4; word-break: keep-all; }
+  .tt .d { font-size: 14px; color: var(--muted); margin-top: 2px; }
+  .tt .m { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin-top: 6px; font-size: 15px; color: var(--muted); }
+  .tt .m span { display: inline-flex; gap: 3px; align-items: center; }
+  .tt .m svg { width: 17px; height: 17px; }
+  .tag-stamp { font-family: var(--f-display); font-size: 13px; padding: 1px 8px; border-radius: 999px; border: 1.5px solid var(--sprout); color: var(--sprout); }
+  .area-head { display: flex; gap: 8px; align-items: center; margin: 14px 0 4px; font-family: var(--f-display); font-size: 21px; }
+  .area-head svg { width: 26px; height: 26px; color: var(--soil); }
+  .area-head:first-child { margin-top: 0; }
+
+  /* 아래에서 올라오는 시트 */
+  .sheet-bg { position: fixed; inset: 0; z-index: 20; background: rgba(30, 20, 12, .55); display: flex; align-items: flex-end; justify-content: center; }
+  .sheet { width: 100%; max-width: 520px; max-height: 92%; overflow: auto; background: var(--surface); border-radius: 24px 24px 0 0; padding: 18px max(18px, env(safe-area-inset-right, 0px)) calc(22px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px)); display: grid; gap: 14px; animation: up .22s ease-out; }
+  @keyframes up { from { transform: translateY(40px); opacity: .4; } }
+  .sheet-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .sheet-top h2 { font-size: 24px; }
+  .x { width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--surface-2); display: grid; place-items: center; cursor: pointer; flex: none; }
+  .x svg { width: 24px; height: 24px; }
+  .scanbox { position: relative; width: 100%; aspect-ratio: 1; max-width: 100%; border-radius: 20px; overflow: hidden; background: #1a130d; }
+  .scanbox video { width: 100%; height: 100%; object-fit: cover; }
+  .scanframe { position: absolute; inset: 16%; border: 4px solid #ffb36b; border-radius: 18px; box-shadow: 0 0 0 999px rgba(0, 0, 0, .35); }
+  .scan-hint { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; color: #fff; font-size: 16px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .celebrate { display: grid; justify-items: center; text-align: center; gap: 10px; padding: 8px 0; }
+  .celebrate .stampmark { width: 120px; height: 120px; animation: thump .55s cubic-bezier(.2, 1.6, .4, 1) both; }
+  .celebrate .stampmark svg { width: 46px; height: 46px; }
+  .celebrate .stampmark b { font-size: 20px; }
+  .celebrate h2 { font-size: 30px; }
+  .celebrate p { font-size: 18px; }
+  .celebrate .sub { color: var(--muted); font-size: 16px; }
+  .celebrate.bad .stampmark { color: var(--muted); animation: none; transform: none; }
+  .loading { padding: 40px 0; text-align: center; color: var(--muted); }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand" id="brand"></div>
+    <span class="demo-badge" id="demoBadge" hidden>데모 모드</span>
+  </div>
+</header>
+
+<main class="wrap" id="view"><p class="loading">책밭을 준비하고 있어요…</p></main>
+
+<nav class="tabbar" aria-label="메뉴">
+  <div class="wrap">
+    <a href="#home" data-tab="home"><span data-icon="home"></span>홈</a>
+    <a href="#board" data-tab="board"><span data-icon="board"></span>스탬프판</a>
+    <a href="#info" data-tab="info"><span data-icon="info"></span>행사 정보</a>
+  </div>
+</nav>
+
+<div id="sheetRoot"></div>
+
+<script src="core.js"></script>
+<script src="shared.js"></script>
+<script>
+(function () {
+  var I = UI.icons, esc = UI.esc;
+  var cfg = null, me = null, justSlot = 0, infoTab = null;
+  var view = document.getElementById("view");
+
+  document.getElementById("brand").innerHTML = I.sprout + "<span>책밭 스탬프 투어</span>";
+  document.querySelectorAll("[data-icon]").forEach(function (el) { el.outerHTML = I[el.dataset.icon]; });
+
+  function area(id) { return cfg.areas.filter(function (a) { return a.id === id; })[0] || { name: "", id: id }; }
+  function session(k, v) { try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { return null; } }
+
+  /* ---------- 시작 ---------- */
+  async function boot() {
+    await Api.init();
+    document.getElementById("demoBadge").hidden = Api.mode !== "demo";
+    cfg = await Api.config();
+    // 부스 QR을 휴대폰 카메라로 찍어서 들어온 경우 (?t=토큰)
+    var t = new URLSearchParams(location.search).get("t");
+    if (t) {
+      session("pendingToken", t);
+      history.replaceState(null, "", location.pathname + (location.hash || "#board"));
+    }
+    if (Api.hasSession()) {
+      var r = await Api.me();
+      if (r.ok) me = r.participant; else Api.logout();
+    }
+    window.addEventListener("hashchange", route);
+    if (!location.hash) location.hash = me ? "#board" : "#home";
+    route();
+    applyPending();
+  }
+
+  async function applyPending() {
+    var t = session("pendingToken");
+    if (!t || !me) { if (t && !me && location.hash !== "#join") location.hash = "#join"; return; }
+    session("pendingToken", null);
+    showResult(await Api.scan(t));
+  }
+
+  function route() {
+    var h = (location.hash || "#home").slice(1);
+    if ((h === "board" || h === "ticket") && !me) { location.hash = "#join"; return; }
+    if (h === "ticket" && !(me && me.survey)) { location.hash = "#board"; return; }
+    document.querySelectorAll(".tabbar a").forEach(function (a) {
+      var on = a.dataset.tab === h || (h === "ticket" && a.dataset.tab === "board") || (h === "join" && a.dataset.tab === "board");
+      if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    });
+    ({ home: renderHome, join: renderJoin, board: renderBoard, ticket: renderTicket, info: renderInfo }[h] || renderHome)();
+    window.scrollTo(0, 0);
+  }
+
+  /* ---------- 홈 ---------- */
+  function fieldSvg(count, max, req, fruit, compact) {
+    // 책밭: 칸마다 두둑 하나, 스탬프를 받으면 새싹이 자라요
+    var w = 320, h = compact ? 96 : 120, base = h - 26, gap = w / (max + 1), s = "";
+    s += '<svg class="field-svg" viewBox="0 0 ' + w + " " + h + '" role="img" aria-label="책밭 진행: 스탬프 ' + count + "개\">";
+    s += '<rect x="0" y="' + (base + 6) + '" width="' + w + '" height="' + (h - base - 6) + '" rx="10" fill="var(--soil)"/>';
+    for (var i = 0; i < max; i++) {
+      var x = gap * (i + 1);
+      s += '<ellipse cx="' + x + '" cy="' + (base + 8) + '" rx="' + (gap * 0.42) + '" ry="12" fill="var(--soil-2)"/>';
+      if (i < count) {
+        var stem = 34 + (i % 2) * 6;
+        s += '<path d="M' + x + " " + (base + 2) + "V" + (base - stem) + '" stroke="var(--sprout)" stroke-width="4" stroke-linecap="round" fill="none"/>';
+        s += '<path d="M' + x + " " + (base - stem + 10) + "c-4-12-14-16-24-15 0 10 10 17 24 15z" + '" fill="var(--sprout)"/>';
+        s += '<path d="M' + x + " " + (base - stem + 4) + "c4-12 14-16 24-15 0 10-10 17-24 15z" + '" fill="var(--sprout)" opacity=".85"/>';
+        if (fruit) s += '<circle cx="' + (x + 13) + '" cy="' + (base - stem - 2) + '" r="8" fill="var(--tangerine)"/><path d="M' + (x + 13) + " " + (base - stem - 10) + 'l2-4" stroke="var(--sprout)" stroke-width="2.5" stroke-linecap="round"/>';
+      } else {
+        s += '<ellipse cx="' + x + '" cy="' + (base + 2) + '" rx="6" ry="8" fill="var(--seed)"/>';
+      }
+    }
+    var lx = gap * req + gap / 2;
+    if (!compact) s +='<path d="M' + lx + " 10V" + (base + 4) + '" stroke="var(--tangerine)" stroke-width="2" stroke-dasharray="4 4"/>';
+    if (!compact) s += '<text x="' + (lx - 6) + '" y="20" text-anchor="end" font-size="14" fill="var(--tangerine)" font-family="Jua, sans-serif">선물 조건 ' + req + "개</text>";
+    return s + "</svg>";
+  }
+
+  function renderHome() {
+    var e = cfg.event, r = cfg.rules;
+    var stampAreas = cfg.areas.filter(function (a) { return a.stamp; });
+    var other = cfg.areas.filter(function (a) { return !a.stamp; }).map(function (a) { return a.name; }).join("·");
+    view.innerHTML =
+      '<section class="hero">' +
+        '<div class="hero-field" aria-hidden="true">' + fieldSvg(3, 3, 3, true, true) + "</div>" +
+        '<p class="edition">' + esc(e.edition) + "</p>" +
+        "<h1>" + esc(e.title) + "<small>온라인 스탬프 투어</small></h1>" +
+        '<p class="slogan">' + esc(e.slogan) + "</p>" +
+        '<div class="meta"><span>' + esc(e.period) + "</span><span>" + esc(e.venue) + "</span></div>" +
+      "</section>" +
+      '<a class="btn block" href="' + (me ? "#board" : "#join") + '">' + I.sprout + (me ? "내 스탬프판 보기" : "스탬프 투어 시작") + "</a>" +
+      '<section class="card"><h2 class="sec-title">참여 방법</h2><ol class="steps">' +
+        '<li><span class="num">1</span><div><b>스탬프 ' + r.requiredStamps + "개 이상 모으기</b><span>부스 QR을 찍거나 코드를 입력해요</span></div></li>" +
+        '<li><span class="num">2</span><div><b>만족도 조사 참여 (필수)</b><span>제출 화면을 1층 로비에 보여 주세요</span></div></li>' +
+        '<li><span class="num">3</span><div><b>특별한 선물 받기</b><span>' + esc(cfg.gift.place) + "</span></div></li>" +
+      "</ol></section>" +
+      '<section class="card"><h2 class="sec-title">스탬프를 주는 곳</h2><div class="area-row">' +
+        stampAreas.map(function (a) { return '<div class="area-tile ' + a.id + '">' + I[a.id] + "<b>" + esc(a.name) + "</b><span>" + esc(a.desc) + "</span></div>"; }).join("") +
+      '</div><p class="note" style="margin-top:12px">' + esc(other) + " 프로그램은 스탬프가 없어요. 마음껏 즐겨 주세요!</p></section>" +
+      '<section class="card gift-line">' + I.gift + '<div><p class="label">특별한 선물</p><h2 style="font-size:22px">' + esc(cfg.gift.name) + '</h2><p class="note">' + esc(cfg.gift.place) + "에서 받아요</p></div></section>";
+  }
+
+  /* ---------- 참여자 등록 ---------- */
+  function renderJoin() {
+    if (me) { location.hash = "#board"; return; }
+    view.innerHTML =
+      '<section><p class="label">참여자 등록</p><h1 style="font-size:30px">이름표를 만들어요</h1><p class="note" style="margin-top:6px">두 가지만 적으면 끝나요.</p></section>' +
+      '<form class="card stack" id="joinForm" novalidate>' +
+        '<div class="field"><label for="nick">닉네임</label><input class="input" id="nick" maxlength="12" autocomplete="nickname" placeholder="예: 책벌레"></div>' +
+        '<div class="field"><label for="last4">휴대폰 뒷자리 4자리</label><input class="input code" id="last4" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="0000"></div>' +
+        '<label class="consent" for="agree"><input type="checkbox" id="agree"><div><b>개인정보 수집·이용에 동의해요</b>' +
+          "<dl><dt>항목</dt><dd>닉네임, 휴대폰 뒷자리 4자리</dd><dt>목적</dt><dd>스탬프 확인, 선물 중복 수령 방지</dd><dt>기간</dt><dd>행사 종료 후 1개월 안에 파기</dd></dl>" +
+          '<p style="margin-top:6px;color:var(--muted);font-size:14px">동의하지 않으면 온라인 스탬프 투어에 참여할 수 없어요.</p></div></label>' +
+        '<p class="msg" id="joinMsg" role="alert"></p>' +
+        '<button class="btn block" type="submit">' + I.sprout + "스탬프판 받기</button>" +
+        '<p class="note">같은 닉네임과 번호로 다시 들어오면 모은 스탬프가 그대로 이어져요. 휴대폰을 바꿔도 괜찮아요.</p>' +
+      "</form>";
+    var l4 = document.getElementById("last4");
+    l4.addEventListener("input", function () { l4.value = l4.value.replace(/\D/g, "").slice(0, 4); });
+    document.getElementById("joinForm").addEventListener("submit", async function (ev) {
+      ev.preventDefault();
+      var msg = document.getElementById("joinMsg");
+      var r = await Api.register({ nickname: document.getElementById("nick").value, last4: l4.value, agree: document.getElementById("agree").checked });
+      if (!r.ok) { msg.textContent = r.message; return; }
+      me = r.participant;
+      location.hash = "#board";
+      if (r.resumed) toastSheet("다시 오셨네요!", "모아 둔 스탬프 " + me.stamps.length + "개를 불러왔어요.");
+      applyPending();
+    });
+  }
+
+  /* ---------- 스탬프판 ---------- */
+  function slotHtml(i) {
+    var s = me.stamps[i];
+    if (!s) return '<div class="slot"><span class="no">' + (i + 1) + "</span>" + '<span class="seed">' + I.seed + '</span><span class="empty-txt">빈 칸</span></div>';
+    var a = area(s.area);
+    return '<div class="slot filled ' + s.area + (justSlot === i + 1 ? " just" : "") + '"><span class="no">' + (i + 1) + "</span>" +
+      '<div class="stampmark">' + I[s.area] + "<b>" + esc(a.name) + "</b></div>" +
+      '<span class="pname">' + esc(s.name) + '</span><span class="ptime">' + UI.fmtTime(s.at) + "</span></div>";
+  }
+
+  function renderBoard() {
+    if (!me) return;
+    var r = cfg.rules, n = me.stamps.length, ready = n >= r.requiredStamps, full = n >= r.maxStamps;
+    var slots = "";
+    for (var i = 0; i < r.maxStamps; i++) slots += slotHtml(i);
+    slots += me.survey
+      ? '<div class="slot survey filled' + (justSlot === -1 ? " just" : "") + '"><div class="stampmark">' + I.survey + '<b>확인</b></div><span class="pname">만족도 조사 〈필수〉</span><span class="ptime">' + UI.fmtTime(me.survey.at) + "</span></div>"
+      : '<div class="slot survey"><span class="must">만족도 조사<br>〈필수〉</span><span class="seed">' + I.survey + '</span><span class="empty-txt">1층 로비 확인</span></div>';
+    justSlot = 0;
+
+    var hint = me.survey ? "선물 교환권이 열렸어요!" : ready ? "만족도 조사에 참여할 수 있어요" : "앞으로 " + (r.requiredStamps - n) + "개 더 모아요";
+
+    var surveyBlock;
+    if (me.survey) {
+      surveyBlock = '<section class="card survey-card"><h2>' + I.gift + "선물 교환권</h2><p>" + esc(cfg.gift.place) + "에서 보여 주세요.</p>" +
+        '<a class="btn block sprout" href="#ticket">' + I.gift + "교환권 열기</a></section>";
+    } else {
+      surveyBlock = '<section class="card survey-card"><h2>' + I.survey + "만족도 조사 〈필수〉</h2>" +
+        (ready
+          ? '<a class="btn block" href="' + esc(cfg.survey.url) + '" target="_blank" rel="noopener" aria-label="' + esc(cfg.survey.title) + ' (새 탭)">' + I.survey + "만족도 조사 참여하기</a>"
+          : '<button class="btn block" disabled>' + I.survey + "만족도 조사 참여하기</button><p class=\"note\">스탬프를 " + r.requiredStamps + "개 이상 모으면 열려요.</p>") +
+        '<p class="callout">설문 제출 후 나오는 완료 화면을 <b>' + esc(cfg.survey.place) + "</b> 담당자에게 보여주세요.</p>" +
+        (ready
+          ? '<div class="field"><label for="svCode">담당자 확인코드</label><div class="confirm-row"><input class="input code" id="svCode" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" autocomplete="off"><button class="btn small" id="svBtn" style="min-height:60px">확인</button></div><p class="msg" id="svMsg" role="alert"></p></div>' +
+            '<div class="or">또는</div><button class="btn block ghost" id="svQr">' + I.qr + "설문 확인 QR 찍기</button>"
+          : "") +
+        "</section>";
+    }
+
+    view.innerHTML =
+      '<section><p class="label">나의 책밭</p><h1 style="font-size:28px">' + esc(me.nickname) + "님의 스탬프판</h1></section>" +
+      '<section class="card field-card">' + fieldSvg(n, r.maxStamps, r.requiredStamps, !!me.survey) +
+        '<div class="progress-line"><span class="count">스탬프 <em>' + n + "</em> / " + r.requiredStamps + "개 이상</span><span class=\"hint\">" + hint + "</span></div></section>" +
+      (full ? '<div class="full-banner" role="status">' + I.sprout + "스탬프판이 가득 찼어요!</div>" : "") +
+      '<section class="board" aria-label="스탬프판">' + slots + "</section>" +
+      (full ? "" : '<div class="actions"><button class="btn" id="scanBtn">' + I.qr + 'QR 찍기</button><button class="btn ghost" id="codeBtn">' + I.keypad + "코드 입력</button></div>") +
+      surveyBlock +
+      '<p class="note" style="text-align:center">' + esc(me.nickname) + " · 뒷자리 " + esc(me.last4) + ' · <button id="logout" style="border:0;background:none;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:16px;padding:8px">이 기기에서 나가기</button></p>';
+
+    var sb = document.getElementById("scanBtn"); if (sb) sb.onclick = openScanner;
+    var cb = document.getElementById("codeBtn"); if (cb) cb.onclick = openCodeSheet;
+    var sq = document.getElementById("svQr"); if (sq) sq.onclick = openScanner;
+    var sv = document.getElementById("svCode");
+    if (sv) {
+      sv.addEventListener("input", function () { sv.value = sv.value.replace(/\D/g, "").slice(0, 4); });
+      document.getElementById("svBtn").onclick = async function () {
+        var res = await Api.survey(sv.value);
+        if (!res.ok) { document.getElementById("svMsg").textContent = res.message; return; }
+        showResult(res);
+      };
+    }
+    document.getElementById("logout").onclick = function () {
+      openSheet("이 기기에서 나갈까요?", '<p>스탬프는 저장되어 있어요. 같은 닉네임과 뒷자리로 다시 들어오면 이어져요.</p><div class="two"><button class="btn ghost" data-close>취소</button><button class="btn" id="doLogout">나가기</button></div>');
+      document.getElementById("doLogout").onclick = function () { Api.logout(); me = null; closeSheet(); location.hash = "#home"; };
+    };
+  }
+
+  /* ---------- 결과 처리 ---------- */
+  function showResult(r) {
+    if (r.error === "auth") { Api.logout(); me = null; location.hash = "#join"; return; }
+    if (r.participant) me = r.participant;
+    if (r.ok && r.kind === "stamp") {
+      justSlot = r.slot;
+      var a = area(r.program.area);
+      var extra = r.full ? "스탬프판이 가득 찼어요!" : (me.stamps.length === cfg.rules.requiredStamps ? "이제 만족도 조사에 참여할 수 있어요!" : r.slot + "번째 칸에 찍혔어요");
+      openSheet("", '<div class="celebrate ' + r.program.area + '"><div class="stampmark" style="color:' + (r.program.area === "ilgeu" ? "var(--sprout)" : r.program.area === "bo" ? "var(--soil)" : "var(--tangerine)") + '">' + I[r.program.area] + "<b>" + esc(a.name) + "</b></div><h2>스탬프 쾅!</h2><p>" + esc(r.program.name) + '</p><p class="sub">' + extra + '</p></div><button class="btn block" data-close>스탬프판 보기</button>');
+      if (location.hash !== "#board") location.hash = "#board"; else renderBoard();
+      return;
+    }
+    if (r.ok && r.kind === "survey") {
+      justSlot = -1;
+      openSheet("", '<div class="celebrate"><div class="stampmark" style="color:var(--sprout)">' + I.survey + '<b>확인</b></div><h2>축하합니다!</h2><p>책밭에 씨앗을 심으셨어요</p><p class="sub">선물 교환권이 열렸어요.</p></div><a class="btn block sprout" href="#ticket" data-close>' + I.gift + "교환권 열기</a>");
+      if (location.hash === "#board") renderBoard();
+      return;
+    }
+    var full = r.error === "full";
+    openSheet("", '<div class="celebrate bad"><div class="stampmark">' + (full ? I.sprout : I.seed) + "<b>" + (full ? "가득" : "앗!") + "</b></div><h2>" + (full ? "스탬프판이 가득 찼어요!" : "스탬프를 찍지 못했어요") + "</h2><p>" + esc(r.message) + '</p></div><button class="btn block ghost" data-close>닫기</button>');
+    if (location.hash === "#board") renderBoard();
+  }
+
+  /* ---------- 시트 ---------- */
+  var stream = null, scanning = false;
+  function openSheet(title, body) {
+    closeSheet();
+    var root = document.getElementById("sheetRoot");
+    root.innerHTML = '<div class="sheet-bg" id="sheetBg"><div class="sheet" role="dialog" aria-modal="true"' + (title ? ' aria-label="' + esc(title) + '"' : "") + ">" +
+      (title ? '<div class="sheet-top"><h2>' + esc(title) + '</h2><button class="x" data-close aria-label="닫기">' + I.close + "</button></div>" : "") + body + "</div></div>";
+    root.querySelector("#sheetBg").addEventListener("click", function (e) {
+      if (e.target.id === "sheetBg" || e.target.closest("[data-close]")) closeSheet();
+    });
+    var f = root.querySelector("input, .btn"); if (f) f.focus();
+  }
+  function closeSheet() {
+    scanning = false;
+    if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
+    document.getElementById("sheetRoot").innerHTML = "";
+  }
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSheet(); });
+  function toastSheet(title, text) { openSheet(title, "<p>" + esc(text) + '</p><button class="btn block" data-close>좋아요</button>'); }
+
+  function openCodeSheet() {
+    openSheet("인증코드 입력", '<p class="note">부스 스태프가 알려주는 숫자 4자리를 넣어 주세요.</p>' +
+      '<input class="input code" id="stCode" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" autocomplete="off" aria-label="인증코드 4자리">' +
+      '<p class="msg" id="stMsg" role="alert"></p><button class="btn block" id="stBtn">' + I.sprout + "스탬프 받기</button>");
+    var inp = document.getElementById("stCode");
+    inp.addEventListener("input", function () { inp.value = inp.value.replace(/\D/g, "").slice(0, 4); });
+    async function go() {
+      var r = await Api.stamp(inp.value);
+      if (!r.ok && (r.error === "wrong" || r.error === "format" || r.error === "wrongbox" || r.error === "locked")) { document.getElementById("stMsg").textContent = r.message; return; }
+      showResult(r);
+    }
+    document.getElementById("stBtn").onclick = go;
+    inp.addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
+  }
+
+  /* ---------- QR 스캐너 ---------- */
+  var detector = null;
+  async function getDecoder() {
+    if (detector) return detector;
+    if ("BarcodeDetector" in window) {
+      try { var bd = new BarcodeDetector({ formats: ["qr_code"] }); detector = function (src) { return bd.detect(src).then(function (c) { return c[0] ? c[0].rawValue : ""; }); }; return detector; } catch (e) { /* jsQR로 */ }
+    }
+    if (!window.jsQR) await UI.loadScript("https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js");
+    var cv = document.createElement("canvas"), ctx = cv.getContext("2d", { willReadFrequently: true });
+    detector = function (src) {
+      var w = src.videoWidth || src.naturalWidth || src.width, h = src.videoHeight || src.naturalHeight || src.height;
+      if (!w || !h) return Promise.resolve("");
+      var k = Math.min(1, 900 / Math.max(w, h)); cv.width = Math.round(w * k); cv.height = Math.round(h * k);
+      ctx.drawImage(src, 0, 0, cv.width, cv.height);
+      var res = jsQR(ctx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height);
+      return Promise.resolve(res ? res.data : "");
+    };
+    return detector;
+  }
+
+  async function handleScanned(raw) {
+    var token = UI.tokenFrom(raw);
+    if (!token) { closeSheet(); showResult({ ok: false, message: "스탬프 투어 QR이 아니에요. 부스에 있는 QR을 찍어 주세요." }); return; }
+    closeSheet();
+    showResult(await Api.scan(token));
+  }
+
+  async function openScanner() {
+    openSheet("QR 찍기", '<div class="scanbox"><video id="cam" playsinline muted></video><div class="scanframe"></div><p class="scan-hint" id="scanHint">네모 안에 QR을 맞춰 주세요</p></div>' +
+      '<p class="msg" id="scanMsg" role="status"></p>' +
+      '<div class="two"><label class="btn ghost small" for="photo">' + I.camera + '사진으로 찍기</label><button class="btn ghost small" id="toCode">' + I.keypad + "코드 입력</button></div>" +
+      '<input type="file" id="photo" accept="image/*" capture="environment" hidden>');
+    document.getElementById("toCode").onclick = openCodeSheet;
+    document.getElementById("photo").onchange = async function (e) {
+      var f = e.target.files[0]; if (!f) return;
+      var img = new Image();
+      img.onload = async function () {
+        try { var raw = await (await getDecoder())(img); if (raw) handleScanned(raw); else document.getElementById("scanMsg").textContent = "QR을 찾지 못했어요. 가까이에서 다시 찍어 주세요."; }
+        catch (err) { document.getElementById("scanMsg").textContent = "QR을 읽지 못했어요. 코드 입력을 이용해 주세요."; }
+        URL.revokeObjectURL(img.src);
+      };
+      img.src = URL.createObjectURL(f);
+    };
+    var msg = document.getElementById("scanMsg");
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      msg.textContent = "여기서는 카메라를 바로 열 수 없어요. '사진으로 찍기'나 휴대폰 카메라 앱으로 QR을 찍어 주세요.";
+      return;
+    }
+    try {
+      var decode = await getDecoder();
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+      var v = document.getElementById("cam");
+      if (!v) { closeSheet(); return; }
+      v.srcObject = stream; await v.play();
+      scanning = true;
+      (async function loop() {
+        if (!scanning) return;
+        try { var raw = v.readyState >= 2 ? await decode(v) : ""; if (raw) { scanning = false; handleScanned(raw); return; } } catch (e) { /* 다음 프레임 */ }
+        setTimeout(loop, 180);
+      })();
+    } catch (e) {
+      msg.textContent = "카메라를 열지 못했어요. 카메라 권한을 허용하거나 '사진으로 찍기'를 눌러 주세요.";
+    }
+  }
+
+  /* ---------- 교환권 ---------- */
+  function renderTicket() {
+    var used = me.redeemed;
+    view.innerHTML =
+      '<section class="ticket">' +
+        '<div class="head">' + I.gift + "<p>축하합니다!</p><h1>책밭에 씨앗을 심으셨어요</h1></div>" +
+        "<dl><dt>선물</dt><dd>" + esc(cfg.gift.name) + "</dd><dt>받는 곳</dt><dd>" + esc(cfg.gift.place) + "</dd>" +
+        "<dt>참여자</dt><dd>" + esc(me.nickname) + " · " + esc(me.last4) + "</dd><dt>스탬프</dt><dd>" + me.stamps.length + "개</dd>" +
+        "<dt>설문 확인</dt><dd>" + UI.fmtTime(me.survey.at) + "</dd></dl>" +
+        '<div class="status">' + (used ? "" : '<span class="pill">교환 전 · 사용할 수 있어요</span>') + "</div>" +
+        (used ? '<div class="used-mark" role="status">교환 완료<small>' + UI.fmtTime(used.at) + "</small></div>" : "") +
+      "</section>" +
+      (used ? '<p class="note" style="text-align:center">선물을 받으셨어요. 즐거운 가을 보내세요!</p>'
+            : '<p class="note" style="text-align:center">이 화면을 ' + esc(cfg.gift.place) + " 담당자에게 보여 주세요.</p>" +
+              '<button class="btn block ghost" id="redeemBtn">교환 완료 (담당자 전용)</button>') +
+      '<a class="btn block ghost" href="#board">' + I.board + "스탬프판으로</a>";
+    var rb = document.getElementById("redeemBtn");
+    if (rb) rb.onclick = function () {
+      openSheet("교환 완료 처리", '<p class="note">선물을 드린 뒤 담당자 PIN을 입력해 주세요. 한 번 처리하면 되돌릴 수 없어요.</p>' +
+        '<input class="input code" id="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="담당자 PIN">' +
+        '<p class="msg" id="pinMsg" role="alert"></p><button class="btn block" id="pinBtn">교환 완료</button>');
+      document.getElementById("pinBtn").onclick = async function () {
+        var r = await Api.redeem(document.getElementById("pin").value);
+        if (r.participant) me = r.participant;
+        if (!r.ok) { document.getElementById("pinMsg").textContent = r.message; if (r.error === "duplicate") renderTicket(); return; }
+        closeSheet(); renderTicket();
+      };
+    };
+  }
+
+  /* ---------- 행사 정보 ---------- */
+  function startMin(t) { var m = String(t).match(/(\d{1,2}):(\d{2})/); return m ? +m[1] * 60 + +m[2] : 9999; }
+  function progItem(p, showTime) {
+    var a = area(p.area);
+    return "<li><div class=\"t\">" + (showTime ? esc(p.time).replace(" / ", "<br>").replace("~", "~<br>") : "") + "</div><div>" +
+      '<div class="n">' + esc(p.name) + "</div>" + (p.detail ? '<div class="d">' + esc(p.detail) + "</div>" : "") +
+      '<div class="m"><span class="chip ' + p.area + '">' + I[p.area] + esc(a.name) + "</span><span>" + I.pin + esc(p.place) + "</span>" +
+      (p.rainPlace ? "<span>" + I.rain + "우천 시 " + esc(p.rainPlace) + "</span>" : "") +
+      (p.stamp ? '<span class="tag-stamp">스탬프</span>' : "") + "</div></div></li>";
+  }
+  function renderInfo() {
+    var days = [{ id: "10.24", label: "10.24<br>(토)" }, { id: "10.25", label: "10.25<br>(일)" }, { id: "always", label: "상설" }, { id: "more", label: "함께<br>즐길 거리" }];
+    if (!infoTab) infoTab = "10.24";
+    var list = "", ps = cfg.programs;
+    if (infoTab === "10.24" || infoTab === "10.25") {
+      var items = ps.filter(function (p) { return p.stamp && (p.day === infoTab || (p.day === "양일" && /^\d/.test(p.time))); })
+        .concat(ps.filter(function (p) { return !p.stamp && /^\d/.test(p.time); }))
+        .sort(function (a, b) { return startMin(a.time) - startMin(b.time); });
+      list = '<ul class="tt">' + items.map(function (p) { return progItem(p, true); }).join("") + "</ul>";
+    } else if (infoTab === "always") {
+      list = '<p class="note">운영시간 내내 열려 있어요.</p><ul class="tt">' + ps.filter(function (p) { return p.stamp && !/^\d/.test(p.time); }).map(function (p) { return progItem(p, false).replace('<div class="t"></div>', '<div class="t">양일</div>'); }).join("") + "</ul>";
+    } else {
+      list = '<p class="callout">놀멍·즐기멍·지키멍은 스탬프 대상이 아니에요. 부담 없이 즐겨 주세요!</p>' +
+        cfg.areas.filter(function (a) { return !a.stamp; }).map(function (a) {
+          return '<h3 class="area-head">' + I[a.id] + esc(a.name) + ' <span class="note">' + esc(a.desc) + '</span></h3><ul class="tt">' +
+            ps.filter(function (p) { return p.area === a.id; }).map(function (p) { return progItem(p, true).replace('<div class="t">운영시간 중</div>', '<div class="t">양일</div>'); }).join("") + "</ul>";
+        }).join("");
+    }
+    view.innerHTML =
+      '<section><p class="label">행사 정보</p><h1 style="font-size:28px">언제, 어디서 할까요?</h1><p class="note" style="margin-top:4px">' + esc(cfg.event.venue) + "</p></section>" +
+      '<div class="hours">' + cfg.event.hours.map(function (h) { return "<div><b>" + esc(h.day) + "</b><span>" + esc(h.time) + "</span></div>"; }).join("") + "</div>" +
+      '<div class="seg" role="tablist">' + days.map(function (d) { return '<button role="tab" data-tab="' + d.id + '" aria-selected="' + (infoTab === d.id) + '">' + d.label + "</button>"; }).join("") + "</div>" +
+      '<section class="card" style="padding-block:6px 10px">' + list + "</section>";
+    view.querySelectorAll(".seg button").forEach(function (b) { b.onclick = function () { infoTab = b.dataset.tab; renderInfo(); }; });
+  }
+
+  boot().catch(function (e) {
+    console.error(e);
+    view.innerHTML = '<p class="loading">불러오지 못했어요. 잠시 뒤 새로고침해 주세요.</p>';
+  });
+})();
+</script>
+</body>
+</html>
